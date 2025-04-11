@@ -8,6 +8,9 @@ import json
 from datetime import datetime, timedelta
 import time
 
+# Configuração de desenvolvimento
+DEV_MODE = True  # Altere para False em produção
+
 # Configuração da página
 st.set_page_config(
     page_title="Sistema de Cobrança para Treinadores",
@@ -362,8 +365,16 @@ def verificar_pagamentos():
 init_db()
 
 # Inicializar sessão
+if 'logged_in' not in st.session_state:
+    # Em modo de desenvolvimento, podemos iniciar já logado
+    st.session_state.logged_in = DEV_MODE
+
 if 'user' not in st.session_state:
-    st.session_state.user = None
+    if DEV_MODE:
+        # Usuário padrão para desenvolvimento
+        st.session_state.user = {"id": 1, "nome": "Desenvolvedor", "email": "dev@exemplo.com"}
+    else:
+        st.session_state.user = None
 
 # Sidebar para navegação
 def sidebar():
@@ -597,8 +608,6 @@ def pagina_dashboard():
                 elif status == "Pago":
                     if status_pagamento['data_pagamento']:
                         data_pag = datetime.strptime(status_pagamento['data_pagamento'], "%Y-%m-%d").date()
-    else:
-        st.info("Sem vencimentos nos próximos 7 dias.")
     
     # 2. Lista de Alunos com Status de Pagamento
     st.subheader('Alunos e Status de Pagamento')
@@ -1008,20 +1017,29 @@ def pagina_editar_aluno():
 
 # Aplicativo principal
 def main():
-    pagina = sidebar()
+    # Verificar pagamentos
+    verificar_pagamentos()
     
-    if pagina == "Login":
+    # Mostrar página correspondente
+    if not st.session_state.logged_in:
         pagina_login()
-    elif pagina == "Dashboard":
-        pagina_dashboard()
-    elif pagina == "Cadastrar Aluno":
-        pagina_cadastro_aluno()
-    elif pagina == "Notificações":
-        pagina_notificacoes()
-    elif pagina == "Configurações":
-        pagina_configuracoes()
-    elif pagina == "Editar Aluno":
-        pagina_editar_aluno()
+    else:
+        # Se estiver no modo de desenvolvimento, mostrar um indicador
+        if DEV_MODE:
+            st.sidebar.warning("MODO DE DESENVOLVIMENTO - Login automático")
+        
+        pagina = sidebar()
+        
+        if pagina == "Dashboard":
+            pagina_dashboard()
+        elif pagina == "Cadastrar Aluno":
+            pagina_cadastro_aluno()
+        elif pagina == "Notificações":
+            pagina_notificacoes()
+        elif pagina == "Configurações":
+            pagina_configuracoes()
+        elif pagina == "Editar Aluno" and 'aluno_id' in st.session_state:
+            pagina_editar_aluno()
 
 if __name__ == "__main__":
     main()
