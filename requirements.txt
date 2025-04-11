@@ -1,0 +1,7 @@
+streamlit==1.22.0
+pandas==1.5.3
+sqlite3worker==1.1.7
+python-dateutil==2.8.2
+streamlit-calendar==0.3.0
+streamlit-authenticator==0.2.2
+pillow==9.5.0
